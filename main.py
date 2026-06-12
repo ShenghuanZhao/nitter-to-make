@@ -1,6 +1,6 @@
 import os
-import feedparser
 import requests
+import feedparser
 
 RSS_URL = "https://nitter.net/whyyoutouzhele/rss"
 
@@ -8,7 +8,7 @@ feed = feedparser.parse(RSS_URL)
 
 print("entries:", len(feed.entries))
 
-if not feed.entries:
+if len(feed.entries) == 0:
     raise Exception("No tweets found")
 
 tweet = feed.entries[0]
@@ -16,8 +16,7 @@ tweet = feed.entries[0]
 payload = {
     "author": "whyyoutouzhele",
     "title": tweet.title,
-    "link": tweet.link,
-    "published": getattr(tweet, "published", "")
+    "link": tweet.link
 }
 
 response = requests.post(
@@ -26,4 +25,4 @@ response = requests.post(
     timeout=30
 )
 
-print("status:", response.status_code)
+print("make status:", response.status_code)
