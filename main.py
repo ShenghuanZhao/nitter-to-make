@@ -1,37 +1,47 @@
+```python
 import os
+import json
 import requests
 import feedparser
 
-print("===== RSS VERSION START =====")
-
 RSS_URL = "https://nitter.net/whyyoutouzhele/rss"
 
-print("Loading RSS...")
-print(RSS_URL)
+print("===== NITTER CHECK START =====")
 
 feed = feedparser.parse(RSS_URL)
 
-print("Feed status:", getattr(feed, "status", "unknown"))
-print("Entries found:", len(feed.entries))
-
 if len(feed.entries) == 0:
-    raise Exception("No tweets found in RSS feed")
+    raise Exception("No tweets found")
 
 tweet = feed.entries[0]
 
-print("Latest title:")
-print(tweet.title)
+current_link = tweet.link
+current_title = tweet.title
 
-print("Latest link:")
-print(tweet.link)
+print("Latest tweet:")
+print(current_title)
+print(current_link)
+
+# 读取状态文件
+with open("state.json", "r", encoding="utf-8") as f:
+    state = json.load(f)
+
+last_link = state.get("last_link", "")
+
+print("Previous link:")
+print(last_link)
+
+# 去重判断
+if current_link == last_link:
+    print("No new tweet. Exit.")
+    raise SystemExit(0)
+
+print("New tweet detected!")
 
 payload = {
-    "author": "whyyoutouzhele",
-    "title": tweet.title,
-    "link": tweet.link
+    "title": current_title,
+    "link": current_link
 }
-
-print("Sending to MAKE...")
 
 response = requests.post(
     os.environ["MAKE_WEBHOOK"],
@@ -40,7 +50,13 @@ response = requests.post(
 )
 
 print("MAKE status:", response.status_code)
-print("MAKE response:")
-print(response.text)
 
-print("===== RSS VERSION END =====")
+# 更新状态文件
+state["last_link"] = current_link
+
+with open("state.json", "w", encoding="utf-8") as f:
+    json.dump(state, f, ensure_ascii=False, indent=2)
+
+print("State updated.")
+print("===== NITTER CHECK END =====")
+```
