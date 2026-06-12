@@ -1,18 +1,29 @@
 import os
+import feedparser
 import requests
 
-webhook = os.environ["MAKE_WEBHOOK"]
+RSS_URL = "https://nitter.net/whyyoutouzhele/rss"
+
+feed = feedparser.parse(RSS_URL)
+
+print("entries:", len(feed.entries))
+
+if not feed.entries:
+    raise Exception("No tweets found")
+
+tweet = feed.entries[0]
 
 payload = {
-    "source": "github",
-    "message": "hello from github actions"
+    "author": "whyyoutouzhele",
+    "title": tweet.title,
+    "link": tweet.link,
+    "published": getattr(tweet, "published", "")
 }
 
 response = requests.post(
-    webhook,
+    os.environ["MAKE_WEBHOOK"],
     json=payload,
     timeout=30
 )
 
 print("status:", response.status_code)
-print(response.text)
