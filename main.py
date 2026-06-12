@@ -1,4 +1,3 @@
-```python
 import os
 import json
 import requests
@@ -59,4 +58,4 @@ with open("state.json", "w", encoding="utf-8") as f:
 
 print("State updated.")
 print("===== NITTER CHECK END =====")
-```
+
